@@ -38,13 +38,9 @@ export const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
       if (response.status === 200 && response.data.token) {
-        //setUser(response.data.user);
         localStorage.setItem('userToken', response.data.token); // Store the token
         await loadUserProfile(); // Load and store user profile
-        //return response.data;
-      } //else {
-        //throw new Error(response.data.message);
-      //}
+      }
     } catch (error) {
       throw new Error(error.response.data.message);
     }
@@ -59,9 +55,7 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 201) {
         // Redirect to login after successful registration
         window.location.href = '/login';
-      } //else {
-        //throw new Error(response.data.message);
-      //}
+      }
     } catch (error) {
       throw new Error(error.response.data.message);
     }

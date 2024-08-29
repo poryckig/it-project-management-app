@@ -5,17 +5,15 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const verifyToken = async (req, res, next) => {
-  // Sprawdź, czy istnieje nagłówek Authorization, zanim użyjesz replace
-  const authHeader = req.header('Authorization');
-  const token = req.cookies.token || (authHeader && authHeader.replace('Bearer ', ''));
+  const token = req.cookies.token;
 
   if (!token) {
-      return res.status(403).json({ message: 'No token provided' });
+      return res.status(403).json({ message: 'A token is necessary for authentication' });
   }
 
   try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+      const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
       if (!user) {
           return res.status(401).json({ message: 'Invalid token' });

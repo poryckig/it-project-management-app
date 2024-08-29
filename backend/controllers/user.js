@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { validateUsername, validatePassword } from '../middleware/validation.js';
 
 const prisma = new PrismaClient();
@@ -10,8 +10,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
 async function login(req, res) {
     const { username, password } = req.body;
 
+    // Walidacja nazwy użytkownika
     try {
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: { username }
       });
   
@@ -19,12 +20,14 @@ async function login(req, res) {
         return res.status(401).json({ message: 'Wrong username or password' });
       }
   
+      // Walidacja hasła
       const isPasswordCorrect = await bcrypt.compare(password + PEPPER, user.password);
       if (!isPasswordCorrect) {
         return res.status(401).json({ message: 'Wrong username or password' });
       }
   
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+      // Generowanie tokena JWT
+      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '4h' });
   
       res.cookie('token', token, { httpOnly: true });
       res.status(200).json({ message: 'Login successful', token });
@@ -52,7 +55,7 @@ async function register(req, res) {
 
     try {
         // Sprawdzenie, czy nazwa użytkownika jest już zajęta
-        const isUsernameTaken = await prisma.users.findUnique({
+        const isUsernameTaken = await prisma.user.findUnique({
             where: { username }
         });
 
@@ -64,18 +67,15 @@ async function register(req, res) {
         const hashedPassword = await bcrypt.hash(password + PEPPER, 12);
 
         // Tworzenie nowego użytkownika
-        const newUser = await prisma.users.create({
+        const newUser = await prisma.user.create({
             data: {
                 username,
                 password: hashedPassword,
-                registeredAt: new Date() // Ustawienie daty rejestracji
+                registeredAt: new Date() // Ustawienie daty rejestracji użytkownika
             }
         });
 
-        // Generowanie tokena JWT (opcjonalne, jeśli chcesz automatycznie zalogować użytkownika po rejestracji)
-        const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(201).json({ message: 'User created', user: newUser, token });
+        res.status(201).json({ message: 'User created', user: newUser });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -89,13 +89,13 @@ async function logout(req, res) {
 
 async function getUserProfile(req, res) {
     try {
-        const token = req.cookies.token || req.header('Authorization').replace('Bearer ', '');
+        const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ message: 'No token provided' });
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await prisma.users.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id: decoded.id },
             select: {
                 id: true,
