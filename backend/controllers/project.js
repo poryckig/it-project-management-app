@@ -28,82 +28,183 @@ export const getProjectsForUser = async (req, res) => {
 export const getProjectById = async (req, res) => {
   const { id } = req.params;
   try {
-      const project = await prisma.project.findUnique({
-          where: { id: parseInt(id) },
-          include: {
-              caseStudy: true, // Include the caseStudy relation
-              projectStatutes: true, // Include the projectStatutes relation
-              managedBy: true,
-              members: true
-          }
-      });
-
-      if (!project) {
-          return res.status(404).json({ message: 'Project not found' });
+    const project = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        caseStudy: true,
+        projectStatutes: true,
+        managedBy: true,
+        members: true
       }
+    });
 
-      res.json(project);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Ensure the managedBy user is included in the members list
+    const projectWithManagerAsMember = {
+      ...project,
+      members: [...project.members, project.managedBy]
+    };
+
+    res.json(projectWithManagerAsMember);
   } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const createProject = async (req, res) => {
-  try {
-    const { name, description } = req.body;
+  const { name, description } = req.body;
 
-    const newProject = await prisma.project.create({
-        data: {
-            name,
-            description,
-            managedBy: {
-                connect: { id: req.user.id } // Łączymy projekt z użytkownikiem tworzącym go
-            },
+  try {
+    const project = await prisma.project.create({
+      data: {
+        name,
+        description,
+        managedBy: {
+          connect: { id: req.user.id }
         },
-        include: {
-            managedBy: true, // Zwracamy również dane o kierowniku projektu
-        },
+      },
     });
 
-    res.status(201).json(newProject);
+    res.status(201).json(project);
   } catch (error) {
-      res.status(500).json({ message: 'Failed to create project', error });
+    console.error('Failed to create project', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const updateProject = async (req, res) => {
-    const { id } = req.params;
-    const { caseStudy, projectStatutes } = req.body;
+  const { id } = req.params;
+  const { caseStudy, projectStatutes } = req.body;
 
-    try {
-        const updateData = {};
+  try {
+    const updateData = {};
 
-        if (caseStudy) {
-            updateData.caseStudy = {
-                upsert: {
-                    create: caseStudy,
-                    update: caseStudy,
-                },
-            };
-        }
-
-        if (projectStatutes) {
-            updateData.projectStatutes = {
-                upsert: {
-                    create: projectStatutes,
-                    update: projectStatutes,
-                },
-            };
-        }
-
-        const updatedProject = await prisma.project.update({
-            where: { id: parseInt(id) },
-            data: updateData,
-        });
-
-        res.json(updatedProject);
-    } catch (error) {
-        console.error('Failed to update project', error);
-        res.status(500).json({ error: 'Failed to update project' });
+    if (caseStudy) {
+      updateData.caseStudy = {
+        upsert: {
+          create: caseStudy,
+          update: caseStudy,
+        },
+      };
     }
+
+    if (projectStatutes) {
+      updateData.projectStatutes = {
+        upsert: {
+          create: projectStatutes,
+          update: projectStatutes,
+        },
+      };
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { id: parseInt(id) },
+      data: updateData,
+    });
+
+    res.json(updatedProject);
+  } catch (error) {
+    console.error('Failed to update project', error);
+    res.status(500).json({ error: 'Failed to update project' });
+  }
+};
+
+export const inviteUsers = async (req, res) => {
+  const { id } = req.params;
+  const { usernames } = req.body;
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+      include: { managedBy: true },
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    const inviterUsername = req.user.username;
+    const projectName = project.name;
+
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          in: usernames,
+        },
+      },
+    });
+
+    const usersToInvite = users.filter(user => user.id !== req.user.id);
+
+    const invitations = usersToInvite.map(user => ({
+      projectId: parseInt(id),
+      userId: user.id,
+      invitedBy: req.user.id,
+    }));
+
+    await prisma.projectInvitation.createMany({
+      data: invitations,
+    });
+
+    const notifications = usersToInvite.map(user => ({
+      userId: user.id,
+      projectId: parseInt(id),
+      content: `${inviterUsername} invited you to join the project "${projectName}".`,
+    }));
+
+    await prisma.notification.createMany({
+      data: notifications,
+    });
+
+    res.status(200).json({ message: 'Invitations and notifications sent' });
+  } catch (error) {
+    console.error('Failed to invite users', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const respondToInvitation = async (req, res) => {
+  const { id } = req.params;
+  const { response } = req.body;
+
+  try {
+    const invitation = await prisma.projectInvitation.findUnique({
+      where: { id: parseInt(id) },
+      include: { project: true, user: true },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Invitation not found' });
+    }
+
+    if (response === 'accept') {
+      await prisma.project.update({
+        where: { id: invitation.projectId },
+        data: {
+          members: {
+            connect: { id: invitation.userId },
+          },
+        },
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: invitation.project.managedById,
+          content: `${invitation.user.username} has joined the project ${invitation.project.name}`,
+        },
+      });
+    }
+
+    await prisma.projectInvitation.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.status(200).json({ message: `Invitation ${response}ed` });
+  } catch (error) {
+    console.error(`Failed to respond to invitation: ${error}`);
+    res.status(500).json({ message: 'Server error' });
+  }
 };

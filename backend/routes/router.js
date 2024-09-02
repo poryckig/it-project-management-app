@@ -15,4 +15,12 @@ router.post('/projects', verifyToken, projectController.createProject);
 router.get('/projects/:id', verifyToken, projectController.getProjectById);
 router.put('/projects/:id', verifyToken, projectController.updateProject);
 
+router.get('/users/search', verifyToken, userController.searchUsers);
+router.post('/projects/:id/invite', verifyToken, projectController.inviteUsers);
+
+router.post('/invitations/:id/respond', verifyToken, projectController.respondToInvitation);
+
+router.get('/notifications', verifyToken, userController.getNotifications);
+router.delete('/notifications/:id', verifyToken, userController.deleteNotification);
+
 export default router;

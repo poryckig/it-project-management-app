@@ -1,133 +1,177 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import avatar from '../../img/avatar-placeholder.png';
-import enFlag from '../../img/flags/uk-flag.png';
-import plFlag from '../../img/flags/pl-flag.png';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import LanguageSwitcher from './LanguageSwitcher';
+import ProfileDropDown from './ProfileDropDown';
 
-const ProfileDropDown = (props) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const profileRef = useRef();
-  const { user, handleLogout } = useAuth();
-  const navigate = useNavigate();
+const BASE_URL = 'http://localhost:3000/api/v1';
 
-  const handleSubmitLogout = () => {
-    handleLogout();
-    navigate('/');
-    setIsOpen(false);
-  };
+const NavbarComponent = () => {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(''); 
+  const notificationsRef = useRef();
+
+  useEffect(() => {
+    if (user) {
+      axios.get(`${BASE_URL}/notifications`, { withCredentials: true })
+        .then(response => setNotifications(response.data))
+        .catch(error => console.error('Failed to fetch notifications', error));
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
       }
     };
 
-    if (isOpen) {
+    if (showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [showNotifications]);
 
-  return (
-    <div className={`relative ${props.class}`} ref={profileRef}>
-      <button
-        className="w-8 h-8 outline-none rounded-full ring-offset-2 ring-gray-200 ring-2 focus:ring-[#6A1515]"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <img
-          src={avatar}
-          alt={user ? user.username : 'User'}
-          className="w-full h-full rounded-full"
-        />
-      </button>
-      {isOpen && (
-        <ul className="absolute bg-white mt-2 py-1 w-48 border rounded-md shadow-lg right-0 profile-dropdown">
-          <li>
-            <Link
-              to="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => setIsOpen(false)}
-            >
-              {'Profil'}
-            </Link>
-          </li>
-          <li>
-            <button
-              onClick={handleSubmitLogout}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              {'Wyloguj'}
-            </button>
-          </li>
-        </ul>
-      )}
-    </div>
-  );
-};
+  const handleNotificationClick = (notification) => {
+    setSelectedNotification(notification);
+  };
 
-const LanguageSwitcher = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef();
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const handleClickOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setIsOpen(false);
+  const handleDeleteNotification = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/notifications/${id}`, { withCredentials: true });
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch (error) {
+      console.error('Failed to delete notification', error);
     }
   };
 
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const handleAcceptInvitation = async () => {
+    try {
+      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectId}/respond`, { response: 'accept' }, { withCredentials: true });
+      setSuccessMessage(`You have joined the project ${selectedNotification.project.name}.`);
+      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
+      setSelectedNotification(null);
+    } catch (error) {
+      console.error('Failed to accept invitation:', error.response?.data);
+    }
+  };
 
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button onClick={toggleDropdown} className="text-gray-700 hover:text-gray-900">
-        {'Zmień język'}
-      </button>
-      {isOpen && (
-        <div className="absolute right-0 bg-white mt-2 py-1 w-48 border rounded-md shadow-lg">
-          <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer">
-            <img src={enFlag} alt="English" className="w-6" />
-            {'Angielski'}
-          </div>
-          <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer">
-            <img src={plFlag} alt="Polski" className="w-6" />
-            {'Polski'}
-          </div>
+  const handleDeclineInvitation = async () => {
+    try {
+      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectId}/respond`, { response: 'decline' }, { withCredentials: true });
+      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
+      setSelectedNotification(null);
+    } catch (error) {
+      console.error('Failed to decline invitation:', error.response?.data);
+    }
+  };
+
+  const Modal = ({ isOpen, onClose, children }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white p-4 rounded shadow-lg w-1/3 relative">
+          <button
+            className="absolute top-0 right-0 mt-2 mr-2 text-gray-700 hover:text-gray-900 text-lg"
+            onClick={onClose}
+          >
+            &#x2716;
+          </button>
+          {children}
         </div>
-      )}
-    </div>
-  );
-};
-
-const NavbarComponent = () => {
-  const { user } = useAuth();
+      </div>
+    );
+  };
 
   return (
     <nav className="bg-white border-b">
       <div className="flex items-center justify-between py-3 px-4 max-w-screen-xl mx-auto md:px-8">
         <div className="flex items-center">
-          {user && (
-            <a href="/" className="mr-4 text-gray-900 hover:text-gray-900 font-normal">
-              Home
-            </a>
-          )}
+          <Link to="/" className="mr-4 text-gray-900 hover:text-gray-900 font-normal">
+            Home
+          </Link>
         </div>
         <div className="flex items-center space-x-4 ml-auto">
+          {user && (
+            <div className="relative" ref={notificationsRef}>
+              <button
+                className="text-gray-700 hover:text-gray-900"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                Powiadomienia ({notifications.length})
+              </button>
+              {showNotifications && notifications.length > 0 && (
+                <div className="absolute mt-2 w-64 bg-white shadow-lg border rounded-md">
+                  {notifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex justify-between items-center relative"
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <span>{notification.content}</span>
+                      <button
+                        className="text-red-500 hover:text-red-700 text-lg absolute top-2 right-1 mt-1 mr-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteNotification(notification.id);
+                        }}
+                      >
+                        &#x2716;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <LanguageSwitcher />
           {user && <ProfileDropDown />}
         </div>
       </div>
+      <Modal isOpen={!!selectedNotification} onClose={() => setSelectedNotification(null)}>
+        {selectedNotification && (
+          <div>
+            <p>{selectedNotification.content}</p>
+            <div className="mt-4 flex justify-between">
+              {selectedNotification.content.includes('invited') && (
+                <>
+                  <button
+                    className="text-white font-medium px-4 py-2 rounded bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] w-1/2 mr-2"
+                    onClick={handleAcceptInvitation}
+                  >
+                    Akceptuj
+                  </button>
+                  <button
+                    className="bg-gray-300 text-gray-900 font-normal px-4 py-2 rounded hover:bg-gray-400 w-1/2"
+                    onClick={handleDeclineInvitation}
+                  >
+                    Odrzuć
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
+      <Modal isOpen={!!successMessage} onClose={() => setSuccessMessage('')}>
+        <div>
+          <p>{successMessage}</p>
+          <button
+            className="mt-4 px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150"
+            onClick={() => setSuccessMessage('')}
+          >
+            OK
+          </button>
+        </div>
+      </Modal>
     </nav>
   );
 };

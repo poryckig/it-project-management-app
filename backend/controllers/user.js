@@ -114,4 +114,56 @@ async function getUserProfile(req, res) {
     }
 };
 
-export { login, register, logout, getUserProfile };
+async function searchUsers(req, res) {
+    const { query } = req.query;
+
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                username: {
+                    contains: query,
+                    mode: 'insensitive',
+                },
+            },
+            select: {
+                id: true,
+                username: true,
+            },
+        });
+
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+async function getNotifications(req, res) {
+    const { id: userId } = req.user;
+
+    try {
+        const notifications = await prisma.notification.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        res.json(notifications);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+}
+
+async function deleteNotification(req, res) {
+    const { id } = req.params;
+  
+    try {
+      await prisma.notification.delete({
+        where: { id: parseInt(id) },
+      });
+  
+      res.status(200).json({ message: 'Notification deleted' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+
+export { login, register, logout, getUserProfile, searchUsers, getNotifications, deleteNotification };
