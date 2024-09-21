@@ -63,6 +63,7 @@ model ProjectInvitation {
 
   project   Project   @relation(fields: [projectId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
+  notifications Notification[]
 }
 
 model Notification {
@@ -74,5 +75,7 @@ model Notification {
 
   user        User      @relation(fields: [userId], references: [id])
   project     Project?  @relation(fields: [projectId], references: [id])
-  projectId   Int? 
+  projectId   Int?
+  projectInvitation  ProjectInvitation?  @relation(fields: [projectInvitationId], references: [id])
+  projectInvitationId Int?
 }

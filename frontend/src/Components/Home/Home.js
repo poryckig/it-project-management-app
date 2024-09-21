@@ -75,7 +75,6 @@ const Home = () => {
         fetchUsers();
     }, [userSearchTerm, user.id, selectedUsers]);
     
-
     const handleCreateProject = async () => {
         try {
             const response = await axios.post(`${BASE_URL}/projects`, {

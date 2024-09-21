@@ -145,15 +145,26 @@ export const inviteUsers = async (req, res) => {
       invitedBy: req.user.id,
     }));
 
-    await prisma.projectInvitation.createMany({
+    const createdInvitations = await prisma.projectInvitation.createMany({
       data: invitations,
     });
 
-    const notifications = usersToInvite.map(user => ({
-      userId: user.id,
-      projectId: parseInt(id),
-      content: `${inviterUsername} invited you to join the project "${projectName}".`,
-    }));
+    const createdInvitationsData = await prisma.projectInvitation.findMany({
+      where: {
+        projectId: parseInt(id),
+        userId: { in: usersToInvite.map(user => user.id) },
+      },
+    });
+
+    const notifications = usersToInvite.map(user => {
+      const invitation = createdInvitationsData.find(inv => inv.userId === user.id);
+      return {
+        userId: user.id,
+        projectId: parseInt(id),
+        content: `${inviterUsername} invited you to join the project "${projectName}".`,
+        projectInvitationId: invitation ? invitation.id : null,
+      };
+    });
 
     await prisma.notification.createMany({
       data: notifications,
@@ -192,8 +203,10 @@ export const respondToInvitation = async (req, res) => {
 
       await prisma.notification.create({
         data: {
-          userId: invitation.project.managedById,
-          content: `${invitation.user.username} has joined the project ${invitation.project.name}`,
+          userId: invitation.userId,
+          content: `You have been invited to project ${invitation.project.name}`,
+          projectId: invitation.projectId,
+          projectInvitationId: invitation.id // Include the project invitation ID
         },
       });
     }
@@ -205,6 +218,26 @@ export const respondToInvitation = async (req, res) => {
     res.status(200).json({ message: `Invitation ${response}ed` });
   } catch (error) {
     console.error(`Failed to respond to invitation: ${error}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getInvitationById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const invitation = await prisma.projectInvitation.findUnique({
+      where: { id: parseInt(id) },
+      include: { project: true, user: true },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Invitation not found' });
+    }
+
+    res.status(200).json(invitation);
+  } catch (error) {
+    console.error('Failed to fetch invitation', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

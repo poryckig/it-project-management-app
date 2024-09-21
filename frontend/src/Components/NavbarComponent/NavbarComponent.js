@@ -39,8 +39,20 @@ const NavbarComponent = () => {
     };
   }, [showNotifications]);
 
-  const handleNotificationClick = (notification) => {
-    setSelectedNotification(notification);
+  const handleNotificationClick = async (notification) => {
+    const projectInvitationId = notification.projectInvitationId;
+    if (projectInvitationId) {
+      try {
+        console.log('Fetching project invitation with ID:', projectInvitationId);
+        const response = await axios.get(`${BASE_URL}/invitations/${projectInvitationId}`, { withCredentials: true });
+        const projectInvitation = response.data;
+        setSelectedNotification({ ...notification, projectInvitation });
+      } catch (error) {
+        console.error('Failed to fetch project invitation:', error);
+      }
+    } else {
+      setSelectedNotification(notification);
+    }
   };
 
   const handleDeleteNotification = async (id) => {
@@ -53,23 +65,54 @@ const NavbarComponent = () => {
   };
 
   const handleAcceptInvitation = async () => {
+    if (!selectedNotification) {
+      console.error('Selected notification is not available');
+      return;
+    }
+
+    if (!selectedNotification.projectInvitation) {
+      console.error('Project invitation is not available');
+      return;
+    }
+
+    console.log('Selected Notification ID:', selectedNotification.id);
+    console.log('Project Invitation ID:', selectedNotification.projectInvitation.id);
     try {
-      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectId}/respond`, { response: 'accept' }, { withCredentials: true });
-      setSuccessMessage(`You have joined the project ${selectedNotification.project.name}.`);
-      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
+      const response = await axios.post(
+        `${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`,
+        { response: 'accept' },
+        { withCredentials: true }
+      );
+      setSuccessMessage(response.data.message);
       setSelectedNotification(null);
     } catch (error) {
-      console.error('Failed to accept invitation:', error.response?.data);
+      console.error('Failed to accept invitation:', error.response.data);
     }
   };
-
+  
   const handleDeclineInvitation = async () => {
+    if (!selectedNotification) {
+      console.error('Selected notification is not available');
+      return;
+    }
+
+    if (!selectedNotification.projectInvitation) {
+      console.error('Project invitation is not available');
+      return;
+    }
+
+    console.log('Selected Notification ID:', selectedNotification.id);
+    console.log('Project Invitation ID:', selectedNotification.projectInvitation.id);
     try {
-      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectId}/respond`, { response: 'decline' }, { withCredentials: true });
-      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
+      const response = await axios.post(
+        `${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`,
+        { response: 'decline' },
+        { withCredentials: true }
+      );
+      setSuccessMessage(response.data.message);
       setSelectedNotification(null);
     } catch (error) {
-      console.error('Failed to decline invitation:', error.response?.data);
+      console.error('Failed to decline invitation:', error.response.data);
     }
   };
 
