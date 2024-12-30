@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   const loadUserProfile = async () => {
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
 
       const token = localStorage.getItem('userToken');
       if (token) {
@@ -21,10 +21,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userResponse.data));
       }
     } catch (error) {
-      console.error('Error loading user profile:', error);
-      localStorage.clear(); // Clear session storage on error
+      localStorage.clear();
     }
-    setLoading(false); // End loading 
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -38,8 +37,8 @@ export const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
       if (response.status === 200 && response.data.token) {
-        localStorage.setItem('userToken', response.data.token); // Store the token
-        await loadUserProfile(); // Load and store user profile
+        localStorage.setItem('userToken', response.data.token);
+        await loadUserProfile();
       }
     } catch (error) {
       throw new Error(error.response.data.message);
@@ -53,7 +52,6 @@ export const AuthProvider = ({ children }) => {
         password,
       });
       if (response.status === 201) {
-        // Redirect to login after successful registration
         window.location.href = '/login';
       }
     } catch (error) {

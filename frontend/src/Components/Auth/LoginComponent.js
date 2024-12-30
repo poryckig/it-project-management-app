@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const LoginComponent = () => {
+    const { t } = useTranslation();
     const { handleLogin } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -20,7 +22,6 @@ const LoginComponent = () => {
 
       try {
         const data = await handleLogin(username, password);
-        console.log('Login successful:', data);
         navigate('/');
       } catch (err) {
         setError(err.message);
@@ -33,7 +34,7 @@ const LoginComponent = () => {
             <div className="text-center pb-8">
               <div className="mt-5">
                 <h3 className="text-gray-800 text-2xl font-bold sm:text-3xl">
-                  Zaloguj się do konta
+                  {t('Log in to your account')}
                 </h3>
               </div>
             </div>
@@ -41,8 +42,9 @@ const LoginComponent = () => {
             {error && <p className="text-red-500 text-center">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="font-medium">Nazwa użytkownika</label>
+                <label htmlFor="username" className="font-medium">{t('Username')}</label>
                 <input
+                  id="username"
                   type="text"
                   required
                   className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
@@ -51,9 +53,10 @@ const LoginComponent = () => {
                 />
               </div>
               <div>
-                <label className="font-medium">Hasło</label>
+                <label htmlFor="password" className="font-medium">{t('Password')}</label>
                 <div className="relative w-full">
                   <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg pr-10"
@@ -74,21 +77,14 @@ const LoginComponent = () => {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-x-3">
-                  {/* Remember me checkbox and forgot password link */}
                 </div>
-                <a
-                  href="/forgot-password"
-                  className="text-center text-[#6A1515] hover:text-[#6A1515]"
-                >
-                  Zapomniałeś hasła?
-                </a>
               </div>
               <button className="w-full px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150">
-                Zaloguj się
+                {t('Sign in')}
               </button>
             </form>
             <button onClick={goToRegister} className="w-full px-4 py-2 text-[#1c1c1c] font-medium bg-gray-100 hover:bg-gray-300 active:bg-gray-300 rounded-full duration-150 border-2 border-gray-600">
-                Zarejestruj sie
+                {t('Sign up')}
             </button>
           </div>
         </main>

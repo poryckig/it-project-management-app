@@ -11,6 +11,9 @@ import Synopsis from './Components/Synopsis/Synopsis';
 import CaseStudy from './Components/CaseStudy/CaseStudy';
 import ProjectStatutes from './Components/ProjectStatutes/ProjectStatutes';
 import RAMatrix from './Components/RAMatrix/RAMatrix';
+import Tasks from './Components/Tasks/Tasks';
+import TaskDetails from './Components/TaskDetails/TaskDetails';
+import ProjectSettings from './Components/ProjectSettings/ProjectSettings';
 import './App.css';
 
 const App = () => {
@@ -22,23 +25,22 @@ const App = () => {
     return (
       <div className="bg-gray-50">
         <Routes>
-          {/* Public routes */}
           {!user && <Route path="/login" element={<LoginComponent />} />}
           {!user && <Route path="/register" element={<RegisterComponent />} />}
 
-          {/* Private routes */}
           {user && <Route path="/" element={<Home />} />}
           {user && <Route path="/profile" element={<Profile />} />}
 
-          {/* Project Details with nested routes */}
           <Route path="/projects/:projectId" element={<ProjectDetails />}>
             <Route path="synopsis" element={<Synopsis />} />
             <Route path="case-study" element={<CaseStudy />} />
             <Route path="statut" element={<ProjectStatutes />} />
             <Route path="ram" element={<RAMatrix />} />
+            <Route path="zadania" element={<Tasks />} />
+            <Route path="tasks/:taskId" element={<TaskDetails />} />
+            <Route path="ustawienia" element={<ProjectSettings />} />
           </Route>
 
-          {/* Redirect to login if not logged in */}
           <Route path="*" element={user ? <Navigate to="/" /> : <Navigate to="/login" />} />
         </Routes>
       </div>

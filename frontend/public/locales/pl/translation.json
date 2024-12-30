@@ -1,0 +1,87 @@
+{
+    "Home": "Strona główna",
+    "Change language": "Zmień język",
+    "English": "Angielski",
+    "Polish": "Polski",
+    "Profile": "Profil",
+    "Log out": "Wyloguj",
+    "Join Date": "Data dołączenia",
+
+    "Log in to your account": "Zaloguj się do konta",
+    "Username": "Nazwa użytkownika",
+    "Password": "Hasło",
+    "Sign in": "Zaloguj się",
+    "Sign up": "Zarejestruj się",
+
+    "Create an account": "Stwórz konto",
+    "Already have an account?": "Posiadasz już konto?",
+
+    "Notifications": "Powiadomienia",
+    "Projects": "Projekty",
+    "Filter projects": "Filtruj projekty",
+    "No projects.": "Brak projektów.",
+    "Create a project": "Stwórz projekt",
+    "Project Manager": "Kierownik projektu",
+    "Create a new project": "Stwórz nowy projekt",
+    "Project name": "Nazwa projektu",
+    "Project description": "Opis projektu",
+    "Add users": "Dodaj użytkowników",
+    "Cancel": "Anuluj",
+    "Create": "Stwórz",
+
+    "General information": "Informacje ogólne",
+    "Case study": "Studium przypadku",
+    "Project statutes": "Statut projektu",
+    "Tasks": "Zadania",
+    "RAM matrix": "Macierz RAM",
+    "Project settings": "Ustawienia projektu",
+    "Project participants": "Uczestnicy projektu",
+
+    "Invite": "Zaproś",
+    "Invite users": "Zaproś użytkowników",
+    "Hand over the leadership": "Przekaż kierownictwo",
+    "Edit": "Edytuj",
+    "Version": "Wersja",
+    "Characters left": "Pozostało znaków",
+    "Last modified": "Ostatnia modyfikacja",
+    "by": "przez",
+
+    "Problem description": "Opis problemu",
+    "Description of the main project goal": "Opis głównego celu projektu",
+    "Description of sub-goals": "Opis celów cząstkowych",
+    "Description of success criteria": "Opis kryteriów sukcesu",
+    "Description of doubts, risks and obstacles": "Opis wątpliwości, ryzyka i przeszkód",
+
+    "Delete section": "Usuń sekcję",
+    "Add new section": "Dodaj nową sekcję",
+
+    "Create a task": "Stwórz zadanie",
+    "Task name": "Nazwa zadania",
+    "Assigned": "Przypisany",
+    "Last change": "Ostatnia zmiana",
+    "No user assigned": "Brak przypisanego użytkownika",
+    "No tasks.": "Brak zadań.",
+
+    "To Do": "Do zrobienia",
+    "In Progress": "W trakcie",
+    "Done": "Zrobione",
+
+    "Priority": "Priorytet",
+    "Description": "Opis",
+
+    "Save": "Zapisz",
+    "Delete task": "Usuń zadanie",
+
+    "R - Responsible, A - Approver, I - Informed": "O - Odpowiedzialny, Z - Zatwierdzający, P - Poinformowany",
+    "R": "O",
+    "A": "Z",
+    "I": "P",
+
+    "Delete project": "Usuń projekt",
+
+    "Are you sure you want to delete the project?": "Czy na pewno chcesz usunąć projekt?",
+    "No": "Nie",
+    "Yes": "Tak",
+
+    "You must increase the version number before saving.": "Przed zapisaniem musisz zwiększyć numer wersji."
+}

@@ -3,10 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 import { format } from 'date-fns';
 import UserPhoto from './UserPhoto/UserPhoto';
 import UserInfo from './UserInfo/UserInfo';
+import { useTranslation } from 'react-i18next';
 import avatar from '../../img/avatar-placeholder.png';
 import './Profile.css';
 
 const Profile = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const registeredAt = format(new Date(user.registeredAt), 'dd-MM-yyyy HH:mm:ss');
 
@@ -16,8 +18,8 @@ const Profile = () => {
         <div className="header-menu">
           <div className="user-profile-info">
             <UserPhoto photo={user && user.image ? user.image : avatar} />
-            <UserInfo label={'Nazwa użytkownika'} value={user ? user.username : ''} />
-            <UserInfo label={'Data dołączenia'} value={registeredAt} />
+            <UserInfo label={t('Username')} value={user ? user.username : ''} />
+            <UserInfo label={t('Join Date')} value={registeredAt} />
           </div>
         </div>
       </div>

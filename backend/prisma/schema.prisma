@@ -16,6 +16,9 @@ model User {
   managedProjects  Project[] @relation("ManagedProjects")
   invitations      ProjectInvitation[]
   notifications    Notification[]
+  tasks            Task[]    @relation("UserTasks")
+  approverTasks    Task[]    @relation("Approvers")
+  informedTasks    Task[]    @relation("Informed")
 }
 
 model Project {
@@ -32,6 +35,7 @@ model Project {
   members           User[]             @relation("UserProjects")
   invitations       ProjectInvitation[]
   notifications     Notification[]
+  tasks             Task[]             @relation("ProjectTasks")
 }
 
 model CaseStudy {
@@ -78,4 +82,19 @@ model Notification {
   projectId   Int?
   projectInvitation  ProjectInvitation?  @relation(fields: [projectInvitationId], references: [id])
   projectInvitationId Int?
+}
+
+model Task {
+  id            Int       @id @default(autoincrement())
+  name          String
+  assignee      User      @relation("UserTasks", fields: [assigneeId], references: [id])
+  assigneeId    Int
+  status        String
+  lastChange    DateTime  @default(now())
+  project       Project   @relation("ProjectTasks", fields: [projectId], references: [id])
+  projectId     Int
+  priority      Int       @default(1)
+  description   String    @default("")
+  approvers     User[]    @relation("Approvers")
+  informed      User[]    @relation("Informed")
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,6 +27,7 @@ const compareVersions = (currentVersion, newVersion) => {
 };
 
 const CaseStudy = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const { project, updateProject, setProject } = useOutletContext();
 
@@ -45,6 +47,10 @@ const CaseStudy = () => {
     }, [project]);
 
     useEffect(() => {
+        setCharsLeft(10000 - content.length);
+    }, [content]);
+
+    useEffect(() => {
         if (isEditing) setError('');
     }, [isEditing]);
 
@@ -54,7 +60,7 @@ const CaseStudy = () => {
 
     const handleSave = async () => {
         if (!compareVersions(project.caseStudy?.version || '0.0.0', version)) {
-            setError('You must increase the version number before saving.');
+            setError(t('You must increase the version number before saving.'));
             return;
         }
 
@@ -91,7 +97,6 @@ const CaseStudy = () => {
 
         setVersion(parts.join('.'));
 
-        // Clear the error when a valid version is selected
         if (compareVersions(project.caseStudy?.version || '0.0.0', parts.join('.'))) {
             setError('');
         }
@@ -105,12 +110,12 @@ const CaseStudy = () => {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-4 relative">
-            <h2 className="text-3xl font-bold text-center mb-4">Case Study</h2>
+        <div className="container mx-auto p-6 bg-white rounded shadow-lg">
+            <h2 className="text-3xl font-bold text-center mb-4">{t('Case study')}</h2>
 
             <div className="mb-4 flex justify-between items-center">
                 <div>
-                    <label className="block text-sm">Wersja</label>
+                    <label className="block text-lg">{t('Version')}</label>
                     {isEditing ? (
                         <div className="flex space-x-2">
                             <select
@@ -158,14 +163,14 @@ const CaseStudy = () => {
                             onClick={handleSave}
                             className="px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150"
                         >
-                            Zapisz
+                            {t('Save')}
                         </button>
                     ) : (
                         <button
                             onClick={handleEdit}
                             className="px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150"
                         >
-                            Edytuj
+                            {t('Edit')}
                         </button>
                     )}
                 </div>
@@ -187,12 +192,12 @@ const CaseStudy = () => {
             )}
 
             {isEditing && (
-                <p className="text-sm text-gray-500">Pozostało znaków: {charsLeft}</p>
+                <p className="text-sm text-gray-500">{t('Characters left')}: {charsLeft}</p>
             )}
 
             {lastModified && (
-                <p className="italic mt-4">
-                    Ostatnia modyfikacja {formatDate(lastModified)} przez: {modifiedBy}
+                <p className="italic mt-9">
+                    {t('Last modified')} {formatDate(lastModified)} {t('by')}: {modifiedBy}
                 </p>
             )}
         </div>

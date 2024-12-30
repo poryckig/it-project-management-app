@@ -1,18 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import LanguageSwitcher from './LanguageSwitcher';
 import ProfileDropDown from './ProfileDropDown';
+import { useTranslation } from "react-i18next";
 
 const BASE_URL = 'http://localhost:3000/api/v1';
 
 const NavbarComponent = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(''); 
   const notificationsRef = useRef();
 
   useEffect(() => {
@@ -30,10 +31,7 @@ const NavbarComponent = () => {
       }
     };
 
-    if (showNotifications) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -43,7 +41,6 @@ const NavbarComponent = () => {
     const projectInvitationId = notification.projectInvitationId;
     if (projectInvitationId) {
       try {
-        console.log('Fetching project invitation with ID:', projectInvitationId);
         const response = await axios.get(`${BASE_URL}/invitations/${projectInvitationId}`, { withCredentials: true });
         const projectInvitation = response.data;
         setSelectedNotification({ ...notification, projectInvitation });
@@ -65,54 +62,35 @@ const NavbarComponent = () => {
   };
 
   const handleAcceptInvitation = async () => {
-    if (!selectedNotification) {
-      console.error('Selected notification is not available');
-      return;
-    }
+    if (!selectedNotification?.projectInvitation) return;
 
-    if (!selectedNotification.projectInvitation) {
-      console.error('Project invitation is not available');
-      return;
-    }
-
-    console.log('Selected Notification ID:', selectedNotification.id);
-    console.log('Project Invitation ID:', selectedNotification.projectInvitation.id);
     try {
-      const response = await axios.post(
-        `${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`,
-        { response: 'accept' },
-        { withCredentials: true }
-      );
-      setSuccessMessage(response.data.message);
+      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`, {
+        response: 'accept',
+      }, { withCredentials: true });
+
+      // Remove notification
+      await axios.delete(`${BASE_URL}/notifications/${selectedNotification.id}`, { withCredentials: true });
+      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
       setSelectedNotification(null);
     } catch (error) {
-      console.error('Failed to accept invitation:', error.response.data);
+      console.error('Failed to accept invitation', error);
     }
   };
-  
+
   const handleDeclineInvitation = async () => {
-    if (!selectedNotification) {
-      console.error('Selected notification is not available');
-      return;
-    }
+    if (!selectedNotification?.projectInvitation) return;
 
-    if (!selectedNotification.projectInvitation) {
-      console.error('Project invitation is not available');
-      return;
-    }
-
-    console.log('Selected Notification ID:', selectedNotification.id);
-    console.log('Project Invitation ID:', selectedNotification.projectInvitation.id);
     try {
-      const response = await axios.post(
-        `${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`,
-        { response: 'decline' },
-        { withCredentials: true }
-      );
-      setSuccessMessage(response.data.message);
-      setSelectedNotification(null);
+      await axios.post(`${BASE_URL}/invitations/${selectedNotification.projectInvitation.id}/respond`, {
+        response: 'decline',
+      }, { withCredentials: true });
+
+      await axios.delete(`${BASE_URL}/notifications/${selectedNotification.id}`, { withCredentials: true });
+      setNotifications(notifications.filter(n => n.id !== selectedNotification.id));
+      setSelectedNotification(null);  // No need for a window
     } catch (error) {
-      console.error('Failed to decline invitation:', error.response.data);
+      console.error('Failed to decline invitation', error);
     }
   };
 
@@ -120,11 +98,14 @@ const NavbarComponent = () => {
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-4 rounded shadow-lg w-1/3 relative">
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center" onClick={onClose}>
+        <div className="bg-white p-4 rounded shadow-lg w-1/3 relative" onClick={(e) => e.stopPropagation()}>
           <button
             className="absolute top-0 right-0 mt-2 mr-2 text-gray-700 hover:text-gray-900 text-lg"
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
           >
             &#x2716;
           </button>
@@ -139,7 +120,7 @@ const NavbarComponent = () => {
       <div className="flex items-center justify-between py-3 px-4 max-w-screen-xl mx-auto md:px-8">
         <div className="flex items-center">
           <Link to="/" className="mr-4 text-gray-900 hover:text-gray-900 font-normal">
-            Home
+            {t('Home')}
           </Link>
         </div>
         <div className="flex items-center space-x-4 ml-auto">
@@ -149,7 +130,7 @@ const NavbarComponent = () => {
                 className="text-gray-700 hover:text-gray-900"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
-                Powiadomienia ({notifications.length})
+                {t('Notifications')} ({notifications.length})
               </button>
               {showNotifications && notifications.length > 0 && (
                 <div className="absolute mt-2 w-64 bg-white shadow-lg border rounded-md">
@@ -179,6 +160,7 @@ const NavbarComponent = () => {
           {user && <ProfileDropDown />}
         </div>
       </div>
+
       <Modal isOpen={!!selectedNotification} onClose={() => setSelectedNotification(null)}>
         {selectedNotification && (
           <div>
@@ -203,17 +185,6 @@ const NavbarComponent = () => {
             </div>
           </div>
         )}
-      </Modal>
-      <Modal isOpen={!!successMessage} onClose={() => setSuccessMessage('')}>
-        <div>
-          <p>{successMessage}</p>
-          <button
-            className="mt-4 px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150"
-            onClick={() => setSuccessMessage('')}
-          >
-            OK
-          </button>
-        </div>
       </Modal>
     </nav>
   );

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RegisterComponent = () => {
+    const { t } = useTranslation();
     const { handleRegister } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -16,8 +18,7 @@ const RegisterComponent = () => {
 
       try {
         const data = await handleRegister(username, password);
-        console.log('Registration successful:', data);
-        navigate('/'); // Redirect to the home or dashboard page
+        navigate('/');
       } catch (err) {
         setError(err.message);
       }
@@ -29,15 +30,15 @@ const RegisterComponent = () => {
           <div className="text-center">
             <div className="mt-5 space-y-2">
               <h3 className="text-gray-800 text-2xl font-bold sm:text-3xl">
-                Stwórz konto
+                {t('Create an account')}
               </h3>
               <p>
-                Posiadasz już konto?{' '}
+                {t('Already have an account?')}{' '}
                 <a
-                  href="/" // Adjust the href to your login route
+                  href="/"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
-                  Zaloguj się
+                  {t('Sign in')}
                 </a>
               </p>
             </div>
@@ -46,8 +47,9 @@ const RegisterComponent = () => {
           <div onSubmit={handleSubmit} className="bg-white shadow p-4 py-6 sm:p-6 sm:rounded-lg">
             <form className="space-y-5">
               <div>
-                <label className="font-medium">Nazwa użytkownika</label>
+                <label htmlFor="username" className="font-medium">{t('Username')}</label>
                 <input
+                  id="username"
                   type="text"
                   required
                   className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
@@ -56,9 +58,10 @@ const RegisterComponent = () => {
                 />
               </div>
               <div>
-                <label className="font-medium">Hasło</label>
+                <label htmlFor="password" className="font-medium">{t('Password')}</label>
                 <div className="relative w-full">
                   <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg pr-10"
@@ -77,11 +80,15 @@ const RegisterComponent = () => {
                   </button>
                 </div>
               </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-x-3">
+                </div>
+              </div>
               <button
                 type="submit"
                 className="w-full px-4 py-2 text-white font-medium bg-[#6A1515] hover:bg-[#551111] active:bg-[#551111] rounded-lg duration-150"
               >
-                Stwórz konto
+                {t('Create an account')}
               </button>
             </form>
           </div>
@@ -91,4 +98,3 @@ const RegisterComponent = () => {
   };
   
   export default RegisterComponent;
-  

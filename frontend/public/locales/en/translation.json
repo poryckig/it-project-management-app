@@ -1,0 +1,87 @@
+{
+    "Home": "Home",
+    "Change language": "Change language",
+    "English": "English",
+    "Polish": "Polish",
+    "Profile": "Profile",
+    "Log out": "Log out",
+    "Join Date": "Join Date",
+
+    "Log in to your account": "Log in to your account",
+    "Username": "Username",
+    "Password": "Password",
+    "Sign in": "Log in",
+    "Sign up": "Sign up",
+
+    "Create an account": "Create an account",
+    "Already have an account?": "Already have an account?",
+
+    "Notifications": "Notifications",
+    "Projects": "Projects",
+    "Filter projects": "Filter projects",
+    "No projects.": "No projects.",
+    "Create a project": "Create a project",
+    "Project Manager": "Project Manager",
+    "Create a new project": "Create a new project",
+    "Project name": "Project name",
+    "Project description": "Project description",
+    "Add users": "Add users",
+    "Cancel": "Cancel",
+    "Create": "Create",
+
+    "General information": "General information",
+    "Case study": "Case study",
+    "Project statutes": "Project statutes",
+    "Tasks": "Tasks",
+    "RAM matrix": "RAM matrix",
+    "Project settings": "Project settings",
+    "Project participants": "Project participants",
+
+    "Invite": "Invite",
+    "Invite users": "Invite users",
+    "Hand over the leadership": "Hand over the leadership",
+    "Edit": "Edit",
+    "Version": "Version",
+    "Characters left": "Characters left",
+    "Last modified": "Last modified",
+    "by": "by",
+
+    "Problem description": "Problem description",
+    "Description of the main project goal": "Description of the main project goal",
+    "Description of sub-goals": "Description of sub-goals",
+    "Description of success criteria": "Description of success criteria",
+    "Description of doubts, risks and obstacles": "Description of doubts, risks and obstacles",
+
+    "Delete section": "Delete section",
+    "Add new section": "Add new section",
+
+    "Create a task": "Create a task",
+    "Task name": "Task name",
+    "Assigned": "Assigned",
+    "Last change": "Last change",
+    "No user assigned": "No user assigned",
+    "No tasks.": "No tasks.",
+
+    "To Do": "To Do",
+    "In Progress": "In Progress",
+    "Done": "Done",
+
+    "Priority": "Priority",
+    "Description": "Description",
+
+    "Save": "Save",
+    "Delete task": "Delete task",
+
+    "R - Responsible, A - Approver, I - Informed": "R - Responsible, A - Approver, I - Informed",
+    "R": "R",
+    "A": "A",
+    "I": "I",
+
+    "Delete project": "Delete project",
+
+    "Are you sure you want to delete the project?": "Are you sure you want to delete the project?",
+    "No": "No",
+    "Yes": "Yes",
+
+    "You must increase the version number before saving.": "You must increase the version number before saving."
+}

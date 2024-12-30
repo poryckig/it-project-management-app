@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import avatar from '../../img/avatar-placeholder.png';
 
 const ProfileDropDown = (props) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const profileRef = useRef();
     const { user, handleLogout } = useAuth();
@@ -51,7 +53,7 @@ const ProfileDropDown = (props) => {
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setIsOpen(false)}
               >
-                {'Profil'}
+                {t('Profile')}
               </Link>
             </li>
             <li>
@@ -59,7 +61,7 @@ const ProfileDropDown = (props) => {
                 onClick={handleSubmitLogout}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                {'Wyloguj'}
+                {t('Log out')}
               </button>
             </li>
           </ul>
